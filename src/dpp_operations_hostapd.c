@@ -2,7 +2,7 @@
 #include "../include/dpp_configurator.h"
 
 #ifndef STUB_MODE
-// hostapd統合実装
+// 実際のhostapd DPP統合実装
 
 // Bootstrap情報の永続化
 #define DPP_STATE_FILE "/tmp/dpp_configurator_state.json"
@@ -27,15 +27,33 @@ static int save_bootstrap_info(int id, const char *uri)
         strcpy(buffer, "{}");
     }
 
-    // 新しい情報を追加（簡単なJSON形式）
+    // 新しい情報を追加
     fp = fopen(DPP_STATE_FILE, "w");
     if (!fp)
     {
         return -1;
     }
 
-    // 簡単なJSON形式で保存
     fprintf(fp, "{\n");
+
+    // 既存のconfigurator情報があれば保持
+    if (strstr(buffer, "configurator_"))
+    {
+        char *start = strstr(buffer, "\"configurator_");
+        char *end = NULL;
+        if (start)
+        {
+            end = strstr(start, "\n  }\n");
+            if (end)
+            {
+                end += 4; // "\n  }\n" の長さ
+                fwrite(start, 1, end - start, fp);
+                fprintf(fp, ",\n");
+            }
+        }
+    }
+
+    // Bootstrap情報を追加
     fprintf(fp, "  \"bootstrap_%d\": {\n", id);
     fprintf(fp, "    \"id\": %d,\n", id);
     fprintf(fp, "    \"uri\": \"%s\"\n", uri);
@@ -46,12 +64,130 @@ static int save_bootstrap_info(int id, const char *uri)
     return 0;
 }
 
+// Configurator情報を保存
+static int save_configurator_info(int id, const char *curve)
+{
+    FILE *fp;
+    char buffer[4096];
+    int len;
+
+    // 既存の状態を読み込み
+    fp = fopen(DPP_STATE_FILE, "r");
+    if (fp)
+    {
+        len = fread(buffer, 1, sizeof(buffer) - 1, fp);
+        buffer[len] = '\0';
+        fclose(fp);
+    }
+    else
+    {
+        strcpy(buffer, "{}");
+    }
+
+    // 新しい情報を追加
+    fp = fopen(DPP_STATE_FILE, "w");
+    if (!fp)
+    {
+        return -1;
+    }
+
+    fprintf(fp, "{\n");
+
+    // 既存のbootstrap情報があれば保持
+    if (strstr(buffer, "bootstrap_"))
+    {
+        char *start = strstr(buffer, "\"bootstrap_");
+        char *end = NULL;
+        if (start)
+        {
+            end = strstr(start, "\n  }\n");
+            if (end)
+            {
+                end += 4; // "\n  }\n" の長さ
+                fwrite(start, 1, end - start, fp);
+                fprintf(fp, ",\n");
+            }
+        }
+    }
+
+    // Configurator情報を追加
+    fprintf(fp, "  \"configurator_%d\": {\n", id);
+    fprintf(fp, "    \"id\": %d,\n", id);
+    fprintf(fp, "    \"curve\": \"%s\"\n", curve);
+    fprintf(fp, "  }\n");
+    fprintf(fp, "}\n");
+
+    fclose(fp);
+    return 0;
+}
+
+// Configurator情報を読み込み
+static char *load_configurator_curve(int id)
+{
+    FILE *fp;
+    char buffer[4096];
+    char *curve = NULL;
+    char search_pattern[64];
+
+    fp = fopen(DPP_STATE_FILE, "r");
+    if (!fp)
+    {
+        return NULL;
+    }
+
+    snprintf(search_pattern, sizeof(search_pattern), "\"configurator_%d\"", id);
+
+    while (fgets(buffer, sizeof(buffer), fp))
+    {
+        if (strstr(buffer, search_pattern))
+        {
+            // 次の行でcurveを探す
+            while (fgets(buffer, sizeof(buffer), fp))
+            {
+                if (strstr(buffer, "\"curve\""))
+                {
+                    // curveの値を抽出
+                    char *start = strchr(buffer, '"');
+                    if (start)
+                    {
+                        start = strchr(start + 1, '"');
+                        if (start)
+                        {
+                            start = strchr(start + 1, '"');
+                            if (start)
+                            {
+                                start++;
+                                char *end = strchr(start, '"');
+                                if (end)
+                                {
+                                    *end = '\0';
+                                    // 改行文字を除去
+                                    char *newline = strchr(start, '\n');
+                                    if (newline)
+                                    {
+                                        *newline = '\0';
+                                    }
+                                    curve = strdup(start);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    fclose(fp);
+    return curve;
+}
+
 // Bootstrap情報を読み込み
 static char *load_bootstrap_uri(int id)
 {
     FILE *fp;
     char buffer[4096];
-    char *line;
     char *uri = NULL;
     char search_pattern[64];
 
@@ -200,6 +336,9 @@ int cmd_configurator_add(struct dpp_configurator_ctx *ctx, char *args)
     printf("Configurator added with ID: %d\n", id);
     ctx->configurator_count++;
 
+    // Configurator情報を永続化
+    save_configurator_info(id, curve);
+
     // メモリ開放
     if (key_file)
         free(key_file);
@@ -209,86 +348,58 @@ int cmd_configurator_add(struct dpp_configurator_ctx *ctx, char *args)
     return 0;
 }
 
-// bootstrap_gen の実装（hostapd統合版）
-int cmd_bootstrap_gen(struct dpp_configurator_ctx *ctx, char *args)
+// dpp_qr_code の実装（hostapd統合版）
+int cmd_dpp_qr_code(struct dpp_configurator_ctx *ctx, char *args)
 {
-    char *type = NULL;
-    char *curve = NULL;
-    char *key_file = NULL;
-    int id;
-    char cmd_str[512];
+    struct dpp_bootstrap_info *bi;
 
     if (ctx->verbose)
     {
-        printf("Processing bootstrap_gen command: %s\n", args);
+        printf("Processing dpp_qr_code command: %s\n", args);
     }
 
-    // 引数解析
-    type = parse_argument(args, "type");
-    curve = parse_argument(args, "curve");
-    key_file = parse_argument(args, "key");
-
-    if (!curve)
+    // QRコードのURIが必要
+    if (!args || strlen(args) == 0)
     {
-        curve = strdup("prime256v1"); // デフォルト
-    }
-
-    if (!type || strcmp(type, "qr") != 0)
-    {
-        printf("Error: Only type=qr is supported\n");
-        if (type)
-            free(type);
-        if (curve)
-            free(curve);
-        if (key_file)
-            free(key_file);
+        printf("Error: QR code URI is required\n");
         return -1;
     }
 
-    // コマンド文字列構築 (hostapd expects "type=qrcode")
-    if (key_file)
+    // DPP URIかどうかの基本チェック
+    if (strncmp(args, "DPP:", 4) != 0)
     {
-        snprintf(cmd_str, sizeof(cmd_str), "type=qrcode curve=%s key=%s", curve, key_file);
-    }
-    else
-    {
-        snprintf(cmd_str, sizeof(cmd_str), "type=qrcode curve=%s", curve);
-    }
-
-    // Bootstrap生成
-    id = dpp_bootstrap_gen(ctx->dpp_global, cmd_str);
-
-    if (id < 0)
-    {
-        printf("Failed to generate bootstrap\n");
-        if (type)
-            free(type);
-        if (curve)
-            free(curve);
-        if (key_file)
-            free(key_file);
+        printf("Error: Invalid DPP URI format (must start with 'DPP:')\n");
         return -1;
     }
 
-    // URIを取得して保存
-    const char *uri = dpp_bootstrap_get_uri(ctx->dpp_global, id);
-    if (uri)
+    // Bootstrap情報をhostapdに追加
+    bi = dpp_add_qr_code(ctx->dpp_global, args);
+
+    if (!bi)
     {
-        save_bootstrap_info(id, uri);
+        printf("Failed to parse QR code\n");
+        return -1;
     }
 
-    printf("Bootstrap generated with ID: %d\n", id);
+    printf("Bootstrap info added with ID: %d\n", bi->id);
+    if (ctx->verbose)
+    {
+        printf("  Parsed QR code: %s\n", args);
+        if (bi->info)
+        {
+            printf("  Device info: %s\n", bi->info);
+        }
+        if (bi->chan)
+        {
+            printf("  Channel list: %s\n", bi->chan);
+        }
+    }
     ctx->bootstrap_count++;
 
-    // メモリ開放
-    if (type)
-        free(type);
-    if (curve)
-        free(curve);
-    if (key_file)
-        free(key_file);
+    // 解析した情報を永続化（オリジナルのURIを保存）
+    save_bootstrap_info(bi->id, args);
 
-    return 0;
+    return bi->id;
 }
 
 // bootstrap_get_uri の実装（hostapd統合版）
@@ -296,7 +407,7 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args)
 {
     int id = -1;
     char *id_str = NULL;
-    const char *uri;
+    struct dpp_bootstrap_info *bi;
 
     if (ctx->verbose)
     {
@@ -317,15 +428,15 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args)
         return -1;
     }
 
-    // Bootstrap URI取得
-    uri = dpp_bootstrap_get_uri(ctx->dpp_global, id);
-    if (!uri)
+    // hostapd内部のBootstrap情報取得
+    bi = dpp_bootstrap_get_id(ctx->dpp_global, id);
+    if (!bi)
     {
         // 保存された情報から読み込みを試行
         char *saved_uri = load_bootstrap_uri(id);
         if (saved_uri)
         {
-            printf("Bootstrap URI: %s\n", saved_uri);
+            printf("Stored Peer QR Code (ID %d): %s\n", id, saved_uri);
             free(saved_uri);
             return 0;
         }
@@ -336,7 +447,45 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args)
         }
     }
 
-    printf("Bootstrap URI: %s\n", uri);
+    // Bootstrap情報の詳細を表示
+    printf("Bootstrap ID %d Details:\n", id);
+    if (bi->uri)
+    {
+        printf("  URI: %s\n", bi->uri);
+    }
+    if (bi->info)
+    {
+        printf("  Info: %s\n", bi->info);
+    }
+    // Check if pubkey_hash is set (non-zero)
+    int hash_set = 0;
+    for (int i = 0; i < SHA256_MAC_LEN; i++)
+    {
+        if (bi->pubkey_hash[i] != 0)
+        {
+            hash_set = 1;
+            break;
+        }
+    }
+
+    if (hash_set)
+    {
+        printf("  Public Key Hash: ");
+        for (int i = 0; i < SHA256_MAC_LEN; i++)
+        {
+            printf("%02x", bi->pubkey_hash[i]);
+            if (i < SHA256_MAC_LEN - 1)
+                printf(":");
+        }
+        printf("\n");
+    }
+    else
+    {
+        printf("  Public Key Hash: (not set)\n");
+    }
+    printf("  Type: %s\n", bi->type == DPP_BOOTSTRAP_QR_CODE ? "QR Code" : bi->type == DPP_BOOTSTRAP_PKEX ? "PKEX"
+                                                                                                          : "Other");
+
     return 0;
 }
 
@@ -386,13 +535,72 @@ int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args)
         if (pass)
             free(pass);
         return -1;
-    }
-
-    // Bootstrap情報取得
+    } // Bootstrap情報取得
     peer_bi = dpp_bootstrap_get_id(ctx->dpp_global, peer_id);
     if (!peer_bi)
     {
-        printf("Error: Peer bootstrap ID %d not found\n", peer_id);
+        // 保存されたbootstrap情報から復元を試行
+        char *saved_uri = load_bootstrap_uri(peer_id);
+        if (saved_uri)
+        {
+            printf("Restoring bootstrap info from saved state...\n");
+            peer_bi = dpp_add_qr_code(ctx->dpp_global, saved_uri);
+            free(saved_uri);
+
+            if (!peer_bi)
+            {
+                printf("Error: Failed to restore bootstrap ID %d\n", peer_id);
+                if (conf_type)
+                    free(conf_type);
+                if (ssid)
+                    free(ssid);
+                if (pass)
+                    free(pass);
+                return -1;
+            }
+            printf("Bootstrap ID %d restored successfully (actual ID: %d)\n", peer_id, peer_bi->id);
+            // 実際に復元されたIDを使用
+            peer_id = peer_bi->id;
+        }
+        else
+        {
+            printf("Error: Peer bootstrap ID %d not found\n", peer_id);
+            if (conf_type)
+                free(conf_type);
+            if (ssid)
+                free(ssid);
+            if (pass)
+                free(pass);
+            return -1;
+        }
+    } // 保存されたConfiguratorを復元を試行（毎回実行して確実にする）
+    char *saved_curve = load_configurator_curve(configurator_id);
+    if (saved_curve)
+    {
+        printf("Restoring configurator info from saved state...\n");
+        char restore_cmd[128];
+        snprintf(restore_cmd, sizeof(restore_cmd), "curve=%s", saved_curve);
+        int restored_id = dpp_configurator_add(ctx->dpp_global, restore_cmd);
+        free(saved_curve);
+
+        if (restored_id < 0)
+        {
+            printf("Error: Failed to restore configurator ID %d\n", configurator_id);
+            if (conf_type)
+                free(conf_type);
+            if (ssid)
+                free(ssid);
+            if (pass)
+                free(pass);
+            return -1;
+        }
+        printf("Configurator restored with ID: %d\n", restored_id);
+        // 実際に復元されたIDを使用
+        configurator_id = restored_id;
+    }
+    else
+    {
+        printf("Error: Configurator ID %d not found and cannot be restored\n", configurator_id);
         if (conf_type)
             free(conf_type);
         if (ssid)
@@ -408,6 +616,9 @@ int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args)
     if (!auth)
     {
         printf("Error: Failed to initialize authentication\n");
+        printf("  peer_bi: %p\n", (void *)peer_bi);
+        printf("  peer_bi->id: %d\n", peer_bi ? peer_bi->id : -1);
+        printf("  dpp_global: %p\n", (void *)ctx->dpp_global);
         if (conf_type)
             free(conf_type);
         if (ssid)
@@ -497,55 +708,18 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
 
     printf("Available commands (hostapd mode):\n");
     printf("  %-20s %s\n", "configurator_add", "Add configurator");
-    printf("  %-20s %s\n", "bootstrap_gen", "Generate bootstrap");
+    printf("  %-20s %s\n", "dpp_qr_code", "Parse QR code and add bootstrap");
     printf("  %-20s %s\n", "bootstrap_get_uri", "Get bootstrap URI");
     printf("  %-20s %s\n", "auth_init", "Initiate authentication");
     printf("  %-20s %s\n", "status", "Show status");
-    printf("  %-20s %s\n", "test_bootstrap", "Test bootstrap generation + URI");
     printf("  %-20s %s\n", "help", "Show help");
 
     printf("\nExamples:\n");
     printf("  configurator_add curve=prime256v1\n");
-    printf("  bootstrap_gen type=qr curve=prime256v1\n");
+    printf("  dpp_qr_code \"DPP:K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQc...\"\n");
     printf("  bootstrap_get_uri id=1\n");
     printf("  auth_init peer=2 configurator=1 conf=sta-psk ssid=test pass=test123\n");
-    printf("  test_bootstrap\n");
 
-    return 0;
-}
-
-// Test command to demonstrate hostapd integration (generate bootstrap + get URI)
-int cmd_test_bootstrap(struct dpp_configurator_ctx *ctx, char *args)
-{
-    int bootstrap_id;
-    const char *uri;
-    char cmd_str[256];
-
-    (void)args; // Unused parameter
-
-    printf("Testing hostapd DPP integration...\n");
-
-    // Generate bootstrap
-    snprintf(cmd_str, sizeof(cmd_str), "type=qrcode curve=prime256v1");
-    bootstrap_id = dpp_bootstrap_gen(ctx->dpp_global, cmd_str);
-
-    if (bootstrap_id < 0)
-    {
-        printf("Failed to generate bootstrap\n");
-        return -1;
-    }
-
-    printf("Bootstrap generated with ID: %d\n", bootstrap_id);
-
-    // Get URI
-    uri = dpp_bootstrap_get_uri(ctx->dpp_global, bootstrap_id);
-    if (!uri)
-    {
-        printf("Failed to get bootstrap URI\n");
-        return -1;
-    }
-
-    printf("Bootstrap URI: %s\n", uri);
     return 0;
 }
 

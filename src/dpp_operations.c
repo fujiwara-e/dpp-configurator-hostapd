@@ -69,59 +69,34 @@ int cmd_configurator_add(struct dpp_configurator_ctx *ctx, char *args)
     return 0;
 }
 
-// bootstrap_gen の実装（スタブ）
-int cmd_bootstrap_gen(struct dpp_configurator_ctx *ctx, char *args)
+// dpp_qr_code の実装（スタブ）
+int cmd_dpp_qr_code(struct dpp_configurator_ctx *ctx, char *args)
 {
-    char *type = NULL;
-    char *curve = "prime256v1";
-    char *key_file = NULL;
-    int id = 1; // スタブとして固定値
+    int id = ++ctx->bootstrap_count; // bootstrap IDをインクリメント
 
     if (ctx->verbose)
     {
-        printf("Processing bootstrap_gen command: %s\n", args);
+        printf("Processing dpp_qr_code command: %s\n", args);
     }
 
-    // 引数解析
-    type = parse_argument(args, "type");
-    char *curve_arg = parse_argument(args, "curve");
-    key_file = parse_argument(args, "key");
-
-    if (curve_arg)
+    // QRコードのURIとして引数をそのまま使用（スタブ実装）
+    if (!args || strlen(args) == 0)
     {
-        curve = curve_arg;
-    }
-
-    if (!type || strcmp(type, "qr") != 0)
-    {
-        printf("Error: Only type=qr is supported\n");
-        if (type)
-            free(type);
-        if (curve_arg)
-            free(curve_arg);
-        if (key_file)
-            free(key_file);
+        printf("Error: QR code URI is required\n");
         return -1;
     }
 
-    printf("Generating bootstrap with type=%s, curve=%s", type, curve);
-    if (key_file)
+    // DPP URIかどうかの基本チェック
+    if (strncmp(args, "DPP:", 4) != 0)
     {
-        printf(", key=%s", key_file);
+        printf("Error: Invalid DPP URI format (must start with 'DPP:')\n");
+        return -1;
     }
-    printf(" (stub implementation)\n");
 
-    // メモリ開放
-    if (type)
-        free(type);
-    if (curve_arg)
-        free(curve_arg);
-    if (key_file)
-        free(key_file);
+    printf("Parsing QR code URI: %s (stub implementation)\n", args);
+    printf("Bootstrap info added with ID: %d\n", id);
 
-    printf("Bootstrap generated with ID: %d\n", id);
-    ctx->bootstrap_count++;
-    return 0;
+    return id;
 }
 
 // bootstrap_get_uri の実装（スタブ）
@@ -238,7 +213,7 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
 {
     printf("Available commands:\n");
     printf("  %-20s %s\n", "configurator_add", "Add configurator");
-    printf("  %-20s %s\n", "bootstrap_gen", "Generate bootstrap");
+    printf("  %-20s %s\n", "dpp_qr_code", "Parse QR code and add bootstrap");
     printf("  %-20s %s\n", "bootstrap_get_uri", "Get bootstrap URI");
     printf("  %-20s %s\n", "auth_init", "Initiate authentication");
     printf("  %-20s %s\n", "status", "Show status");
@@ -246,7 +221,7 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
 
     printf("\nExamples:\n");
     printf("  configurator_add curve=prime256v1\n");
-    printf("  bootstrap_gen type=qr curve=prime256v1\n");
+    printf("  dpp_qr_code \"DPP:K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQc...\"\n");
     printf("  bootstrap_get_uri id=1\n");
     printf("  auth_init peer=2 configurator=1 conf=sta-psk ssid=test pass=test123\n");
 

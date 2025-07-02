@@ -73,12 +73,11 @@ int execute_command(struct dpp_configurator_ctx *ctx, const char *cmd, char *arg
 
 // コマンドハンドラー
 int cmd_configurator_add(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_bootstrap_gen(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_dpp_qr_code(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_test_bootstrap(struct dpp_configurator_ctx *ctx, char *args);
 
 // ユーティリティ関数
 char *parse_argument(char *args, const char *key);

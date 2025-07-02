@@ -3,11 +3,10 @@
 // コマンド一覧
 static struct dpp_command commands[] = {
     {"configurator_add", cmd_configurator_add, "Add configurator"},
-    {"bootstrap_gen", cmd_bootstrap_gen, "Generate bootstrap"},
+    {"dpp_qr_code", cmd_dpp_qr_code, "Parse QR code and add bootstrap"},
     {"bootstrap_get_uri", cmd_bootstrap_get_uri, "Get bootstrap URI"},
     {"auth_init", cmd_auth_init, "Initiate authentication"},
     {"status", cmd_status, "Show status"},
-    {"test_bootstrap", cmd_test_bootstrap, "Test bootstrap generation + URI"},
     {"help", cmd_help, "Show help"},
     {NULL, NULL, NULL}};
 
@@ -102,7 +101,7 @@ int execute_command(struct dpp_configurator_ctx *ctx, const char *cmd, char *arg
 void print_usage(const char *prog_name)
 {
     printf("Usage: %s [-v] <command> [args...]\n", prog_name);
-    printf("Commands: configurator_add, bootstrap_gen, bootstrap_get_uri, auth_init, status, help\n");
+    printf("Commands: configurator_add, dpp_qr_code, bootstrap_get_uri, auth_init, status, help\n");
     printf("Options:\n");
     printf("  -v    Verbose mode\n");
 }
