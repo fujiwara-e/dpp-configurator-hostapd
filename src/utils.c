@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "../include/dpp_configurator.h"
 
 // 引数解析ユーティリティ

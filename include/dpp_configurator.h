@@ -1,32 +1,53 @@
 #ifndef DPP_CONFIGURATOR_H
 #define DPP_CONFIGURATOR_H
 
-#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-// 基本的な型定義
+#ifdef STUB_MODE
+// スタブモード: 基本的な型定義
 typedef uint8_t u8;
 typedef uint16_t u16;
 typedef uint32_t u32;
 
-// 必要な定数
+// 基本的な定数
 #define ETH_ALEN 6
 #define SHA256_MAC_LEN 32
-#define PMKID_LEN 16
-#define PMK_LEN 32
-#define PMK_LEN_MAX 64
-#define SSID_MAX_LEN 32
 
-// hostapd DPP includes (必要最小限)
-// struct dpp_global の前方宣言
+// 前方宣言（スタブ）
 struct dpp_global;
 struct dpp_authentication;
 struct dpp_bootstrap_info;
 struct dpp_configurator;
+
+#else
+// hostapd統合モード: hostapdの型定義を使用
+#include "utils/common.h"
+#include "utils/eloop.h"
+#include "common/dpp.h"
+#include "common/dpp_i.h"
+#include "crypto/crypto.h"
+#include "utils/json.h"
+#include "common/gas.h"
+#endif
+
+// hostapd address type stub
+union hostapd_addr
+{
+    struct in_addr v4;
+    struct in6_addr v6;
+};
+
+// hostapd gas types stub
+struct gas_query_ap;
+
+// DPP asymmetric key stub
+struct dpp_asymmetric_key;
 
 // メイン構造体
 struct dpp_configurator_ctx
@@ -57,6 +78,7 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_test_bootstrap(struct dpp_configurator_ctx *ctx, char *args);
 
 // ユーティリティ関数
 char *parse_argument(char *args, const char *key);

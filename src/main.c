@@ -1,4 +1,3 @@
-#define _GNU_SOURCE
 #include "../include/dpp_configurator.h"
 
 // コマンド一覧
@@ -8,6 +7,7 @@ static struct dpp_command commands[] = {
     {"bootstrap_get_uri", cmd_bootstrap_get_uri, "Get bootstrap URI"},
     {"auth_init", cmd_auth_init, "Initiate authentication"},
     {"status", cmd_status, "Show status"},
+    {"test_bootstrap", cmd_test_bootstrap, "Test bootstrap generation + URI"},
     {"help", cmd_help, "Show help"},
     {NULL, NULL, NULL}};
 
