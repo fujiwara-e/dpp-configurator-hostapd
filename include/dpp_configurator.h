@@ -29,7 +29,8 @@ struct dpp_bootstrap_info;
 struct dpp_configurator;
 
 // メイン構造体
-struct dpp_configurator_ctx {
+struct dpp_configurator_ctx
+{
     struct dpp_global *dpp_global;
     int configurator_count;
     int bootstrap_count;
@@ -37,7 +38,8 @@ struct dpp_configurator_ctx {
 };
 
 // コマンド構造体
-struct dpp_command {
+struct dpp_command
+{
     const char *name;
     int (*handler)(struct dpp_configurator_ctx *ctx, char *args);
     const char *help;
