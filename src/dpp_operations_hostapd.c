@@ -4,6 +4,111 @@
 #ifndef STUB_MODE
 // hostapd統合実装
 
+// Bootstrap情報の永続化
+#define DPP_STATE_FILE "/tmp/dpp_configurator_state.json"
+
+// Bootstrap情報を保存
+static int save_bootstrap_info(int id, const char *uri)
+{
+    FILE *fp;
+    char buffer[4096];
+    int len;
+
+    // 既存の状態を読み込み
+    fp = fopen(DPP_STATE_FILE, "r");
+    if (fp)
+    {
+        len = fread(buffer, 1, sizeof(buffer) - 1, fp);
+        buffer[len] = '\0';
+        fclose(fp);
+    }
+    else
+    {
+        strcpy(buffer, "{}");
+    }
+
+    // 新しい情報を追加（簡単なJSON形式）
+    fp = fopen(DPP_STATE_FILE, "w");
+    if (!fp)
+    {
+        return -1;
+    }
+
+    // 簡単なJSON形式で保存
+    fprintf(fp, "{\n");
+    fprintf(fp, "  \"bootstrap_%d\": {\n", id);
+    fprintf(fp, "    \"id\": %d,\n", id);
+    fprintf(fp, "    \"uri\": \"%s\"\n", uri);
+    fprintf(fp, "  }\n");
+    fprintf(fp, "}\n");
+
+    fclose(fp);
+    return 0;
+}
+
+// Bootstrap情報を読み込み
+static char *load_bootstrap_uri(int id)
+{
+    FILE *fp;
+    char buffer[4096];
+    char *line;
+    char *uri = NULL;
+    char search_pattern[64];
+
+    fp = fopen(DPP_STATE_FILE, "r");
+    if (!fp)
+    {
+        return NULL;
+    }
+
+    snprintf(search_pattern, sizeof(search_pattern), "\"bootstrap_%d\"", id);
+
+    while (fgets(buffer, sizeof(buffer), fp))
+    {
+        if (strstr(buffer, search_pattern))
+        {
+            // 次の行でURIを探す
+            while (fgets(buffer, sizeof(buffer), fp))
+            {
+                if (strstr(buffer, "\"uri\""))
+                {
+                    // URIの値を抽出
+                    char *start = strchr(buffer, '"');
+                    if (start)
+                    {
+                        start = strchr(start + 1, '"');
+                        if (start)
+                        {
+                            start = strchr(start + 1, '"');
+                            if (start)
+                            {
+                                start++;
+                                char *end = strchr(start, '"');
+                                if (end)
+                                {
+                                    *end = '\0';
+                                    // 改行文字を除去
+                                    char *newline = strchr(start, '\n');
+                                    if (newline)
+                                    {
+                                        *newline = '\0';
+                                    }
+                                    uri = strdup(start);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+
+    fclose(fp);
+    return uri;
+}
+
 // DPP初期化関数（hostapd統合版）
 struct dpp_configurator_ctx *dpp_configurator_init(void)
 {
@@ -165,6 +270,13 @@ int cmd_bootstrap_gen(struct dpp_configurator_ctx *ctx, char *args)
         return -1;
     }
 
+    // URIを取得して保存
+    const char *uri = dpp_bootstrap_get_uri(ctx->dpp_global, id);
+    if (uri)
+    {
+        save_bootstrap_info(id, uri);
+    }
+
     printf("Bootstrap generated with ID: %d\n", id);
     ctx->bootstrap_count++;
 
@@ -209,8 +321,19 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args)
     uri = dpp_bootstrap_get_uri(ctx->dpp_global, id);
     if (!uri)
     {
-        printf("Error: Bootstrap ID %d not found\n", id);
-        return -1;
+        // 保存された情報から読み込みを試行
+        char *saved_uri = load_bootstrap_uri(id);
+        if (saved_uri)
+        {
+            printf("Bootstrap URI: %s\n", saved_uri);
+            free(saved_uri);
+            return 0;
+        }
+        else
+        {
+            printf("Error: Bootstrap ID %d not found\n", id);
+            return -1;
+        }
     }
 
     printf("Bootstrap URI: %s\n", uri);
