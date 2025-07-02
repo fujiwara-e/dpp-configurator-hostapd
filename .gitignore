@@ -1,0 +1,30 @@
+# Build artifacts
+dpp-configurator
+*.o
+*.a
+*.so
+
+# Documentation (not included in repository)
+docs/
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*.log
