@@ -15,6 +15,7 @@ struct dpp_configurator_ctx *dpp_configurator_init(void)
     ctx->configurator_count = 0;
     ctx->bootstrap_count = 0;
     ctx->verbose = false;
+    ctx->current_auth = NULL; // スタブ版では常にNULL
 
     printf("DPP Configurator initialized (stub mode)\n");
     return ctx;
@@ -198,6 +199,16 @@ int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args)
     return 0;
 }
 
+// auth_status コマンド（スタブ版）
+int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)args; // 未使用パラメータの警告を避ける
+
+    printf("DPP Authentication Status (stub mode):\n");
+    printf("  No active authentication session (stub implementation)\n");
+    return 0;
+}
+
 // status コマンド
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args)
 {
@@ -216,6 +227,7 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("  %-20s %s\n", "dpp_qr_code", "Parse QR code and add bootstrap");
     printf("  %-20s %s\n", "bootstrap_get_uri", "Get bootstrap URI");
     printf("  %-20s %s\n", "auth_init", "Initiate authentication");
+    printf("  %-20s %s\n", "auth_status", "Show authentication status");
     printf("  %-20s %s\n", "status", "Show status");
     printf("  %-20s %s\n", "help", "Show help");
 
@@ -224,6 +236,27 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("  dpp_qr_code \"DPP:K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQc...\"\n");
     printf("  bootstrap_get_uri id=1\n");
     printf("  auth_init peer=2 configurator=1 conf=sta-psk ssid=test pass=test123\n");
+    printf("  auth_status\n");
 
     return 0;
+}
+
+// auth_init_real コマンド（スタブ版）
+int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("auth_init_real: Real wireless authentication not available in stub mode\n");
+    printf("Use 'make hostapd' to build the version with real wireless support\n");
+    return -1;
+}
+
+// dpp_start_wireless コマンド（スタブ版）
+int cmd_dpp_start_wireless(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("dpp_start_wireless: Wireless interface not available in stub mode\n");
+    printf("Use 'make hostapd' to build the version with wireless support\n");
+    return -1;
 }

@@ -5,9 +5,17 @@ static struct dpp_command commands[] = {
     {"configurator_add", cmd_configurator_add, "Add configurator"},
     {"dpp_qr_code", cmd_dpp_qr_code, "Parse QR code and add bootstrap"},
     {"bootstrap_get_uri", cmd_bootstrap_get_uri, "Get bootstrap URI"},
-    {"auth_init", cmd_auth_init, "Initiate authentication"},
+    {"auth_init_real", cmd_auth_init_real, "Initiate DPP authentication (real wireless)"},
+    {"auth_status", cmd_auth_status, "Show authentication status"},
+    {"test_hostapd", cmd_test_hostapd, "Test hostapd connection"},
+    {"debug_dpp", cmd_debug_dpp, "Debug DPP commands"},
     {"status", cmd_status, "Show status"},
     {"help", cmd_help, "Show help"},
+    {NULL, NULL, NULL}};
+
+// Legacy commands (kept for compatibility)
+static struct dpp_command legacy_commands[] = {
+    {"auth_init", cmd_auth_init, "Legacy: Use auth_init_real instead"},
     {NULL, NULL, NULL}};
 
 int main(int argc, char *argv[])
@@ -85,11 +93,22 @@ int execute_command(struct dpp_configurator_ctx *ctx, const char *cmd, char *arg
 {
     int i;
 
+    // Main commands
     for (i = 0; commands[i].name; i++)
     {
         if (strcmp(cmd, commands[i].name) == 0)
         {
             return commands[i].handler(ctx, args);
+        }
+    }
+
+    // Legacy commands
+    for (i = 0; legacy_commands[i].name; i++)
+    {
+        if (strcmp(cmd, legacy_commands[i].name) == 0)
+        {
+            printf("Warning: '%s' is a legacy command. %s\n", cmd, legacy_commands[i].help);
+            return legacy_commands[i].handler(ctx, args);
         }
     }
 
@@ -100,8 +119,20 @@ int execute_command(struct dpp_configurator_ctx *ctx, const char *cmd, char *arg
 
 void print_usage(const char *prog_name)
 {
-    printf("Usage: %s [-v] <command> [args...]\n", prog_name);
-    printf("Commands: configurator_add, dpp_qr_code, bootstrap_get_uri, auth_init, status, help\n");
-    printf("Options:\n");
+    printf("DPP Configurator CLI Tool (hostapd mode)\n");
+    printf("Usage: %s [-v] <command> [args...]\n\n", prog_name);
+    printf("Main Commands:\n");
+    printf("  configurator_add      Add configurator\n");
+    printf("  dpp_qr_code          Parse QR code and add bootstrap\n");
+    printf("  bootstrap_get_uri    Get bootstrap URI\n");
+    printf("  auth_init_real       Initiate DPP authentication (real wireless)\n");
+    printf("  test_hostapd         Test hostapd connection\n");
+    printf("  debug_dpp            Debug DPP commands\n");
+    printf("  status               Show status\n");
+    printf("  help                 Show detailed help\n");
+    printf("\nOptions:\n");
     printf("  -v    Verbose mode\n");
+    printf("\nExample:\n");
+    printf("  %s test_hostapd interface=wlo1\n", prog_name);
+    printf("  %s auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypass\n", prog_name);
 }

@@ -29,11 +29,14 @@ struct dpp_configurator;
 // hostapd統合モード: hostapdの型定義を使用
 #include "utils/common.h"
 #include "utils/eloop.h"
+#include "utils/wpabuf.h"
 #include "common/dpp.h"
 #include "common/dpp_i.h"
 #include "crypto/crypto.h"
 #include "utils/json.h"
 #include "common/gas.h"
+#include "common/ieee802_11_defs.h"
+#include "common/wpa_ctrl.h"
 #endif
 
 // hostapd address type stub
@@ -56,6 +59,12 @@ struct dpp_configurator_ctx
     int configurator_count;
     int bootstrap_count;
     bool verbose;
+    struct dpp_authentication *current_auth; // 現在の認証セッション
+#ifndef STUB_MODE
+    void *hapd;                  // hostapd interface context (実際の実装用)
+    char *wireless_interface;    // 無線インターフェース名
+    unsigned int operating_freq; // 動作周波数
+#endif
 };
 
 // コマンド構造体
@@ -75,12 +84,20 @@ int execute_command(struct dpp_configurator_ctx *ctx, const char *cmd, char *arg
 int cmd_configurator_add(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_dpp_qr_code(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_test_hostapd(struct dpp_configurator_ctx *ctx, char *args);
+int cmd_debug_dpp(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
+
+// Legacy commands
+int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args);
 
 // ユーティリティ関数
 char *parse_argument(char *args, const char *key);
 void print_usage(const char *prog_name);
+char *decode_hex_string(const char *hex_str);
+bool is_hex_string(const char *str);
 
 #endif /* DPP_CONFIGURATOR_H */
