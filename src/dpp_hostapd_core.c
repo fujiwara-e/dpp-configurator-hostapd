@@ -11,8 +11,6 @@
 #include <sys/un.h>
 #include "../include/dpp_configurator.h"
 
-#ifndef STUB_MODE
-
 #define MAX_RESPONSE_SIZE 4096
 #define HOSTAPD_CLI_PATH "/var/run/hostapd"
 
@@ -150,5 +148,3 @@ static char *encode_hex_string_hostapd(const char *str)
     printf("DEBUG: Encoded '%s' -> '%s'\n", str, hex_str);
     return hex_str;
 }
-
-#endif /* STUB_MODE */

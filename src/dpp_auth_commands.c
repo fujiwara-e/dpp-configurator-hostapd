@@ -9,8 +9,6 @@
 #include <unistd.h>
 #include "../include/dpp_configurator.h"
 
-#ifndef STUB_MODE
-
 #define MAX_RESPONSE_SIZE 4096
 
 // External functions
@@ -252,18 +250,6 @@ cleanup:
 }
 
 // auth_init の実装（シンプル版）
-int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args)
-{
-    (void)ctx;
-    (void)args;
-
-    printf("Note: This is a simulation-only command.\n");
-    printf("For real DPP authentication, use 'auth_init_real' command.\n");
-    printf("Example: auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
-
-    return 0;
-}
-
 // auth_status コマンド（hostapd統合版）
 int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args)
 {
@@ -304,5 +290,3 @@ int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args)
 
     return 0;
 }
-
-#endif /* STUB_MODE */

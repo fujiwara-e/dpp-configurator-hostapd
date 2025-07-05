@@ -9,23 +9,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifdef STUB_MODE
-// スタブモード: 基本的な型定義
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-
-// 基本的な定数
-#define ETH_ALEN 6
-#define SHA256_MAC_LEN 32
-
-// 前方宣言（スタブ）
-struct dpp_global;
-struct dpp_authentication;
-struct dpp_bootstrap_info;
-struct dpp_configurator;
-
-#else
 // hostapd統合モード: hostapdの型定義を使用
 #include "utils/common.h"
 #include "utils/eloop.h"
@@ -37,7 +20,6 @@ struct dpp_configurator;
 #include "common/gas.h"
 #include "common/ieee802_11_defs.h"
 #include "common/wpa_ctrl.h"
-#endif
 
 // hostapd address type stub
 union hostapd_addr
@@ -78,14 +60,12 @@ struct dpp_configurator_ctx
     bool verbose;
     struct dpp_authentication *current_auth; // 現在の認証セッション
     struct dpp_event_handler event_handler;  // イベントハンドラー
-#ifndef STUB_MODE
-    void *hapd;                  // hostapd interface context (実際の実装用)
-    char *wireless_interface;    // 無線インターフェース名
-    unsigned int operating_freq; // 動作周波数
-    bool listening_events;       // イベントリスニング状態
-    bool gas_server_active;      // GAS サーバーアクティブ状態
-    bool config_request_monitor; // Configuration Request監視状態
-#endif
+    void *hapd;                              // hostapd interface context
+    char *wireless_interface;                // 無線インターフェース名
+    unsigned int operating_freq;             // 動作周波数
+    bool listening_events;                   // イベントリスニング状態
+    bool gas_server_active;                  // GAS サーバーアクティブ状態
+    bool config_request_monitor;             // Configuration Request監視状態
 };
 
 // コマンド構造体
@@ -108,27 +88,14 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_monitor(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_auth_detailed_monitor(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_auth_realtime_events(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_control(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_test_hostapd(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_debug_dpp(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
 
 // GAS/DPP Configuration Request/Response コマンド
 int cmd_gas_server_start(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_gas_server_stop(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_gas_monitor(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_config_request_monitor(struct dpp_configurator_ctx *ctx, char *args);
-
-// TX診断コマンド
-int cmd_diagnose_tx(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_diagnose_wireless(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_monitor_tx(struct dpp_configurator_ctx *ctx, char *args);
-
-// Legacy commands
-int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args);
 
 // ユーティリティ関数
 char *parse_argument(char *args, const char *key);

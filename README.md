@@ -28,7 +28,7 @@ EnrolleeのDPP QRコードを受け取り、実際の無線通信によるDPP認
 ### ビルドコマンド
 ```bash
 # hostapd統合版（実用版）
-make clean && make hostapd
+make
 
 # 依存関係確認
 make check-hostapd
@@ -52,43 +52,40 @@ sudo ~/git/hostap/hostapd/hostapd hostapd_dpp.conf
 ### 基本ワークフロー（完全動作確認済み）
 
 ```bash
-# 1. 通信テスト
-./dpp-configurator-hostapd test_hostapd interface=wlo1
-# → 成功: PING、STATUS、HELPコマンドが正常応答
+# 1. DPP機能テスト
+./dpp-configurator-hostapd configurator_add curve=prime256v1
+# → 成功: Configurator追加・暗号鍵生成
 
-# 2. DPP機能テスト
-./dpp-configurator-hostapd debug_dpp interface=wlo1
-# → 成功: 全DPPコマンドが正常応答
-
-# 3. 実際のDPP認証（Authentication Response監視付き）
+# 2. 実際のDPP認証（Authentication Response監視付き）
 ./dpp-configurator-hostapd auth_init_real interface=wlo1 peer_uri="DPP:C:81/6;M:54:32:04:1f:b5:a8;K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDIgACCcWFqRtN+f0loEUgGIXDnMXPrjl92u2pV97Ff6DjUD8=;;" ssid=TestNetwork pass=test123
 # → 成功: DPP Authentication Requestパケットを無線送信
 # → 新機能: Authentication Response自動監視・処理
 
-# 4. 認証イベント監視（手動）
+# 3. 認証イベント監視（手動）
 ./dpp-configurator-hostapd auth_monitor interface=wlo1 timeout=30
 # → 新機能: DPP認証イベントの詳細監視
 
-# 5. 認証制御
+# 4. 認証制御
 ./dpp-configurator-hostapd auth_control interface=wlo1 action=start
 # → 新機能: DPP Listen モードの開始/停止制御
 ```
 
 ## 📋 対応コマンド
 
-| コマンド            | 状態         | 説明                              |
-| ------------------- | ------------ | --------------------------------- |
-| `help`              | ✅ 完動       | ヘルプ表示                        |
-| `status`            | ✅ 完動       | 現在の状態表示                    |
-| `test_hostapd`      | ✅ 完動       | hostapd制御ソケット通信テスト     |
-| `debug_dpp`         | ✅ 完動       | DPP機能テスト                     |
-| `configurator_add`  | ✅ 完動       | Configurator追加                  |
-| `dpp_qr_code`       | ✅ 完動       | QRコード解析                      |
-| `bootstrap_get_uri` | ✅ 完動       | Bootstrap情報取得                 |
-| `auth_init_real`    | ✅ 完動       | 実際の無線DPP認証開始             |
-| `auth_status`       | ✅ 完動       | 認証状態表示                      |
-| `auth_monitor`      | ✅ **新機能** | DPP認証イベント監視               |
-| `auth_control`      | ✅ **新機能** | DPP認証制御（開始/停止/状態確認） |
+| コマンド                 | 状態   | 説明                              |
+| ------------------------ | ------ | --------------------------------- |
+| `help`                   | ✅ 完動 | ヘルプ表示                        |
+| `status`                 | ✅ 完動 | 現在の状態表示                    |
+| `configurator_add`       | ✅ 完動 | Configurator追加                  |
+| `dpp_qr_code`            | ✅ 完動 | QRコード解析                      |
+| `bootstrap_get_uri`      | ✅ 完動 | Bootstrap情報取得                 |
+| `auth_init_real`         | ✅ 完動 | 実際の無線DPP認証開始             |
+| `auth_status`            | ✅ 完動 | 認証状態表示                      |
+| `auth_monitor`           | ✅ 完動 | DPP認証イベント監視               |
+| `auth_control`           | ✅ 完動 | DPP認証制御（開始/停止/状態確認） |
+| `gas_server_start`       | ✅ 完動 | GASサーバー開始                   |
+| `gas_server_stop`        | ✅ 完動 | GASサーバー停止                   |
+| `config_request_monitor` | ✅ 完動 | Configuration Request監視         |
 
 ## 🔧 技術詳細
 
@@ -155,7 +152,6 @@ new-dpp-configurator/
 │   │   ├── dpp_basic_commands.c      # 基本コマンド（configurator_add等）
 │   │   ├── dpp_auth_commands.c       # 認証コマンド（auth_init_real等）
 │   │   ├── dpp_monitoring_commands.c # 監視コマンド（auth_monitor等）
-│   │   ├── dpp_diagnostic_commands.c # 診断コマンド（test_hostapd等）
 │   │   ├── dpp_help_command.c        # ヘルプコマンド
 │   │   └── hostapd_stubs.c          # hostapd未実装関数スタブ
 │   └── dpp_operations.c              # スタブ実装

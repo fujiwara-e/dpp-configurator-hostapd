@@ -132,73 +132,6 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args)
 }
 
 // auth_init の実装（スタブ）
-int cmd_auth_init(struct dpp_configurator_ctx *ctx, char *args)
-{
-    int peer_id = -1;
-    int configurator_id = -1;
-    char *conf_type = NULL;
-    char *ssid = NULL;
-    char *pass = NULL;
-
-    if (ctx->verbose)
-    {
-        printf("Processing auth_init command: %s\n", args);
-    }
-
-    // 引数解析
-    char *peer_str = parse_argument(args, "peer");
-    char *configurator_str = parse_argument(args, "configurator");
-    conf_type = parse_argument(args, "conf");
-    ssid = parse_argument(args, "ssid");
-    pass = parse_argument(args, "pass");
-
-    if (peer_str)
-    {
-        peer_id = atoi(peer_str);
-        free(peer_str);
-    }
-
-    if (configurator_str)
-    {
-        configurator_id = atoi(configurator_str);
-        free(configurator_str);
-    }
-
-    if (peer_id < 0 || configurator_id < 0 || !conf_type)
-    {
-        printf("Error: peer, configurator, and conf parameters required\n");
-        if (conf_type)
-            free(conf_type);
-        if (ssid)
-            free(ssid);
-        if (pass)
-            free(pass);
-        return -1;
-    }
-
-    printf("Authentication initiated for peer %d with configurator %d\n", peer_id, configurator_id);
-    printf("Configuration type: %s", conf_type);
-    if (ssid)
-    {
-        printf(", SSID: %s", ssid);
-    }
-    if (pass)
-    {
-        printf(", Password: %s", pass);
-    }
-    printf(" (stub implementation)\n");
-
-    // メモリ開放
-    if (conf_type)
-        free(conf_type);
-    if (ssid)
-        free(ssid);
-    if (pass)
-        free(pass);
-
-    return 0;
-}
-
 // auth_status コマンド（スタブ版）
 int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args)
 {
@@ -258,5 +191,46 @@ int cmd_dpp_start_wireless(struct dpp_configurator_ctx *ctx, char *args)
     (void)args;
     printf("dpp_start_wireless: Wireless interface not available in stub mode\n");
     printf("Use 'make hostapd' to build the version with wireless support\n");
+    return -1;
+}
+
+// 不足しているコマンド関数をスタブとして追加
+int cmd_auth_monitor(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("auth_monitor: Monitoring not available in stub mode\n");
+    return -1;
+}
+
+int cmd_auth_control(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("auth_control: Control not available in stub mode\n");
+    return -1;
+}
+
+int cmd_gas_server_start(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("gas_server_start: GAS server not available in stub mode\n");
+    return -1;
+}
+
+int cmd_gas_server_stop(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("gas_server_stop: GAS server not available in stub mode\n");
+    return -1;
+}
+
+int cmd_config_request_monitor(struct dpp_configurator_ctx *ctx, char *args)
+{
+    (void)ctx;
+    (void)args;
+    printf("config_request_monitor: Configuration monitoring not available in stub mode\n");
     return -1;
 }

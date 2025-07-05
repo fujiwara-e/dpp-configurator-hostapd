@@ -14,7 +14,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#ifndef STUB_MODE
 #include "utils/common.h"
 #include "common/dpp.h"
 
@@ -128,5 +127,3 @@ void eloop_unregister_read_sock(int sock)
     (void)sock;
     // Event loop not needed for CLI operation
 }
-
-#endif /* !STUB_MODE */

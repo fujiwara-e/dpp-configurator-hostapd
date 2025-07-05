@@ -8,8 +8,6 @@
 #include <string.h>
 #include "../include/dpp_configurator.h"
 
-#ifndef STUB_MODE
-
 // External functions
 extern int hostapd_cli_send_command(const char *interface, const char *cmd,
                                     char *response, size_t response_size);
@@ -239,5 +237,3 @@ int cmd_status(struct dpp_configurator_ctx *ctx, char *args)
 
     return 0;
 }
-
-#endif /* STUB_MODE */

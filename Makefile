@@ -28,33 +28,21 @@ HOSTAPD_SRCS = src/dpp_operations_hostapd.c \
                src/dpp_basic_commands.c \
                src/dpp_auth_commands.c \
                src/dpp_monitoring_commands.c \
-               src/dpp_diagnostic_commands.c \
                src/dpp_help_command.c \
                src/hostapd_stubs.c
 
-# Stub mode sources
-STUB_SRCS = src/dpp_operations.c
+TARGET = dpp-configurator-hostapd
 
-TARGET = dpp-configurator
+# Build target
+.PHONY: all clean test install check-hostapd
 
-# Build modes
-.PHONY: all stub hostapd clean test install check-hostapd
+all: $(TARGET)
 
-all: stub
-
-# Stub mode (current implementation)
-stub: CFLAGS += -DSTUB_MODE
-stub: $(TARGET)
-
-$(TARGET):
-	$(CC) $(CFLAGS) $(INCLUDES) $(SRCS) $(STUB_SRCS) $(LDFLAGS) -o $(TARGET)
-
-# hostapd integration mode
-hostapd: CFLAGS := $(filter-out -DSTUB_MODE,$(CFLAGS))
-hostapd: CFLAGS += -DCONFIG_DPP -DCONFIG_DPP2 -DCONFIG_HMAC_SHA256_KDF -DCONFIG_HMAC_SHA384_KDF -DCONFIG_HMAC_SHA512_KDF -DCONFIG_JSON -DCONFIG_ECC -DCONFIG_SHA256 -DCONFIG_SHA384 -DCONFIG_SHA512 -Wno-unused-parameter
-hostapd: LDFLAGS += $(shell pkg-config --libs libnl-3.0 libnl-genl-3.0)
-hostapd: 
-	$(CC) $(CFLAGS) $(INCLUDES) -o $(TARGET)-hostapd \
+# hostapd integration mode (only mode now)
+$(TARGET): CFLAGS += -DCONFIG_DPP -DCONFIG_DPP2 -DCONFIG_HMAC_SHA256_KDF -DCONFIG_HMAC_SHA384_KDF -DCONFIG_HMAC_SHA512_KDF -DCONFIG_JSON -DCONFIG_ECC -DCONFIG_SHA256 -DCONFIG_SHA384 -DCONFIG_SHA512 -Wno-unused-parameter
+$(TARGET): LDFLAGS += $(shell pkg-config --libs libnl-3.0 libnl-genl-3.0)
+$(TARGET): 
+	$(CC) $(CFLAGS) $(INCLUDES) -o $(TARGET) \
 		$(SRCS) $(HOSTAPD_SRCS) \
 		$(DPP_LIB_DIR)/dpp.c \
 		$(DPP_LIB_DIR)/dpp_auth.c \
@@ -74,9 +62,6 @@ hostapd:
 		$(CRYPTO_LIB_DIR)/sha384-kdf.c \
 		$(CRYPTO_LIB_DIR)/sha512-kdf.c \
 		$(LDFLAGS)
-
-$(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f $(TARGET)

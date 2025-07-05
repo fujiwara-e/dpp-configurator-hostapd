@@ -8,8 +8,6 @@
 #include <string.h>
 #include "../include/dpp_configurator.h"
 
-#ifndef STUB_MODE
-
 // Bootstrap情報の永続化
 #define DPP_STATE_FILE "/tmp/dpp_configurator_state.json"
 
@@ -250,5 +248,3 @@ char *load_bootstrap_uri(int id)
     fclose(fp);
     return uri;
 }
-
-#endif /* STUB_MODE */
