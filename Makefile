@@ -19,8 +19,21 @@ INCLUDES = -I./include \
 
 # Source files
 SRCS = src/main.c \
-       src/dpp_operations.c \
        src/utils.c
+
+# hostapd integration sources
+HOSTAPD_SRCS = src/dpp_operations_hostapd.c \
+               src/dpp_hostapd_core.c \
+               src/dpp_state_manager.c \
+               src/dpp_basic_commands.c \
+               src/dpp_auth_commands.c \
+               src/dpp_monitoring_commands.c \
+               src/dpp_diagnostic_commands.c \
+               src/dpp_help_command.c \
+               src/hostapd_stubs.c
+
+# Stub mode sources
+STUB_SRCS = src/dpp_operations.c
 
 TARGET = dpp-configurator
 
@@ -33,13 +46,16 @@ all: stub
 stub: CFLAGS += -DSTUB_MODE
 stub: $(TARGET)
 
+$(TARGET):
+	$(CC) $(CFLAGS) $(INCLUDES) $(SRCS) $(STUB_SRCS) $(LDFLAGS) -o $(TARGET)
+
 # hostapd integration mode
 hostapd: CFLAGS := $(filter-out -DSTUB_MODE,$(CFLAGS))
 hostapd: CFLAGS += -DCONFIG_DPP -DCONFIG_DPP2 -DCONFIG_HMAC_SHA256_KDF -DCONFIG_HMAC_SHA384_KDF -DCONFIG_HMAC_SHA512_KDF -DCONFIG_JSON -DCONFIG_ECC -DCONFIG_SHA256 -DCONFIG_SHA384 -DCONFIG_SHA512 -Wno-unused-parameter
 hostapd: LDFLAGS += $(shell pkg-config --libs libnl-3.0 libnl-genl-3.0)
 hostapd: 
 	$(CC) $(CFLAGS) $(INCLUDES) -o $(TARGET)-hostapd \
-		src/main.c src/dpp_operations_hostapd.c src/utils.c src/hostapd_stubs.c \
+		$(SRCS) $(HOSTAPD_SRCS) \
 		$(DPP_LIB_DIR)/dpp.c \
 		$(DPP_LIB_DIR)/dpp_auth.c \
 		$(DPP_LIB_DIR)/dpp_crypto.c \
