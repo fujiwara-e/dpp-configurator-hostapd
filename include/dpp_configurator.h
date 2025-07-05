@@ -64,7 +64,6 @@ struct dpp_configurator_ctx
     char *wireless_interface;                // 無線インターフェース名
     unsigned int operating_freq;             // 動作周波数
     bool listening_events;                   // イベントリスニング状態
-    bool gas_server_active;                  // GAS サーバーアクティブ状態
     bool config_request_monitor;             // Configuration Request監視状態
 };
 
@@ -93,8 +92,6 @@ int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
 
 // GAS/DPP Configuration Request/Response コマンド
-int cmd_gas_server_start(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_gas_server_stop(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_config_request_monitor(struct dpp_configurator_ctx *ctx, char *args);
 
 // ユーティリティ関数

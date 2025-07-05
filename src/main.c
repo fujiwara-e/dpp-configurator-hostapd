@@ -9,8 +9,6 @@ static struct dpp_command commands[] = {
     {"auth_status", cmd_auth_status, "Show authentication status"},
     {"auth_monitor", cmd_auth_monitor, "Monitor DPP authentication events"},
     {"auth_control", cmd_auth_control, "Control DPP authentication (start/stop/status)"},
-    {"gas_server_start", cmd_gas_server_start, "Start GAS server for Configuration Requests"},
-    {"gas_server_stop", cmd_gas_server_stop, "Stop GAS server"},
     {"config_request_monitor", cmd_config_request_monitor, "Monitor DPP Configuration Request/Response"},
     {"status", cmd_status, "Show status"},
     {"help", cmd_help, "Show help"},

@@ -42,7 +42,6 @@ struct dpp_configurator_ctx *dpp_configurator_init(void)
     ctx->wireless_interface = NULL;
     ctx->operating_freq = 2412;          // デフォルト: Channel 1
     ctx->listening_events = false;       // イベントリスニング状態を初期化
-    ctx->gas_server_active = false;      // GAS サーバーアクティブ状態を初期化
     ctx->config_request_monitor = false; // Configuration Request監視状態を初期化
 
     printf("DPP Configurator initialized (hostapd mode)\n");
@@ -80,32 +79,6 @@ void dpp_configurator_deinit(struct dpp_configurator_ctx *ctx)
 
 // 残りのコマンド実装（リアルタイム監視など）
 // GAS/Configuration関連のコマンド（簡略化版）
-int cmd_gas_server_start(struct dpp_configurator_ctx *ctx, char *args)
-{
-    char *interface = parse_argument(args, "interface");
-    if (!interface)
-    {
-        printf("Error: interface parameter required\n");
-        return -1;
-    }
-
-    printf("GAS server functionality integrated with hostapd\n");
-    printf("Interface: %s\n", interface);
-    printf("hostapd automatically handles GAS Request/Response for DPP\n");
-
-    ctx->gas_server_active = true;
-    free(interface);
-    return 0;
-}
-
-int cmd_gas_server_stop(struct dpp_configurator_ctx *ctx, char *args)
-{
-    (void)args;
-    printf("GAS server stopped\n");
-    ctx->gas_server_active = false;
-    return 0;
-}
-
 int cmd_config_request_monitor(struct dpp_configurator_ctx *ctx, char *args)
 {
     char *interface = parse_argument(args, "interface");

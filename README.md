@@ -83,8 +83,6 @@ sudo ~/git/hostap/hostapd/hostapd hostapd_dpp.conf
 | `auth_status`            | ✅ 完動 | 認証状態表示                      |
 | `auth_monitor`           | ✅ 完動 | DPP認証イベント監視               |
 | `auth_control`           | ✅ 完動 | DPP認証制御（開始/停止/状態確認） |
-| `gas_server_start`       | ✅ 完動 | GASサーバー開始                   |
-| `gas_server_stop`        | ✅ 完動 | GASサーバー停止                   |
 | `config_request_monitor` | ✅ 完動 | Configuration Request監視         |
 
 ## 🔧 技術詳細

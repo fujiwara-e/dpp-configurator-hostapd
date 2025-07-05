@@ -30,8 +30,6 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("  %-25s %s\n", "auth_control", "Control DPP authentication (start/stop/status)");
 
     printf("\nGAS/Configuration Commands:\n");
-    printf("  %-25s %s\n", "gas_server_start", "Start GAS server for Configuration Requests");
-    printf("  %-25s %s\n", "gas_server_stop", "Stop GAS server");
     printf("  %-25s %s\n", "config_request_monitor", "Monitor Configuration Request/Response");
 
     printf("\nUtility Commands:\n");
@@ -53,7 +51,6 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("    auth_control interface=wlo1 action=status\n");
     printf("\n");
     printf("  GAS/Configuration:\n");
-    printf("    gas_server_start interface=wlo1\n");
     printf("    config_request_monitor interface=wlo1 timeout=120\n");
 
     printf("\nNotes:\n");
