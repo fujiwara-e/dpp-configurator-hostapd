@@ -30,7 +30,16 @@ make clean
 
 ## Hostapd configuration
 
+1. Copy and configure hostapd configuration file:
+   ```bash
+   $ cp hostapd_dpp.conf.sample hostapd_dpp.conf
+   ```
 
+2. Edit `hostapd_dpp.conf` to match your network interface:
+   ```bash
+   $ vim hostapd_dpp.conf
+   # Change 'interface' 'channel' 'ctrl_interface' to your actual settings 
+   ```
 
 ## Setup and Run
 
