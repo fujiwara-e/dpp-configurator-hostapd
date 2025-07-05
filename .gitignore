@@ -1,5 +1,4 @@
 # Build artifacts
-dpp-configurator
 dpp-configurator-hostapd
 *.o
 *.a
@@ -29,3 +28,6 @@ Thumbs.db
 *.tmp
 *.bak
 *.log
+
+# Configuration files
+hostapd_dpp.conf

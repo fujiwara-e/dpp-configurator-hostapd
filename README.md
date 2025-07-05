@@ -8,19 +8,6 @@ A collection of programs created to implement a configurator for Wi-Fi Easy Conn
    $ git clone https://github.com/your-username/dpp-configurator.git
    ```
 
-# Preparation
-1. Create `credential.json` file
-   
-   Set ssid and password for access point
-   ```json
-   {"wi-fi_tech":"infra","discovery":{"ssid":"<SSID>"},"cred":{"akm":"psk","pass":"<PASSWORD>"}}
-   ```
-   
-   Example:
-   ```json
-   {"wi-fi_tech":"infra","discovery":{"ssid":"TestNetwork"},"cred":{"akm":"psk","pass":"test123"}}
-   ```
-
 # How to use
 
 ## Prerequisites
@@ -41,47 +28,50 @@ make check-hostapd
 make clean
 ```
 
+## Hostapd configuration
+
+
+
 ## Setup and Run
 
-1. Setup Network Interface
+1. Compile dpp-configurator-hostapd
    ```bash
-   $ sudo ./setup_dpp_environment.sh
+   $ make clean && make
    ```
 
-2. Start hostapd (in separate terminal)
+2. Setup Network Interface and start hostapd (in separate terminal)
    ```bash
+   $ sudo systemctl stop NetworkManager
    $ sudo /path/to/your/hostap/hostapd/hostapd hostapd_dpp.conf
    ```
 
-3. Compile dpp-configurator
-   ```bash
-   $ make
-   ```
+3. Run dpp-configurator
 
-4. Run dpp-configurator
-
-   - Basic DPP functionality test:
+   - Add configurator:
      ```bash
      $ ./dpp-configurator-hostapd configurator_add curve=prime256v1
      ```
-
-   - Real DPP authentication:
+   - Add enrollee (peer):
      ```bash
-     $ ./dpp-configurator-hostapd auth_init interface=wlo1 peer_uri="DPP:C:81/6;M:12:34:56:78:90:ab;K:MDkwEwYH...6DjUD8=;;" ssid=TestNetwork pass=test123
+     $ ./dpp-configurator-hostapd dpp_qr_code "DPP:C:81/6;M:12:34:56:78:90:ab;K:MDkwEwYH...6DjUD8=;;"
+     ```
+   - Use configurator to do provisioning :
+     ```bash
+     $ ./dpp-configurator-hostapd auth_init peer=1 configurator=1 conf=sta-psk interface=<network-interface> ssid=TestNetwork pass=test123
      ```
 
-5. Restore the Environment
+4. Restore the Environment
    ```bash
    $ ./finish.sh <NI_NAME>
    ```
 
 # Supported Commands
 
-| Command             | Status    | Description               |
-| ------------------- | --------- | ------------------------- |
-| `help`              | ✅ Working | Display help information  |
-| `status`            | ✅ Working | Show current status       |
-| `configurator_add`  | ✅ Working | Add DPP Configurator      |
-| `dpp_qr_code`       | ✅ Working | Parse QR code             |
-| `bootstrap_get_uri` | ✅ Working | Get bootstrap information |
-| `auth_init`         | ✅ Working | Start DPP authentication  |
+| Command             | Description               |
+| ------------------- | ------------------------- |
+| `help`              | Display help information  |
+| `status`            | Show current status       |
+| `configurator_add`  | Add DPP Configurator      |
+| `dpp_qr_code`       | Parse QR code             |
+| `bootstrap_get_uri` | Get bootstrap information |
+| `auth_init`         | Start DPP authentication  |
