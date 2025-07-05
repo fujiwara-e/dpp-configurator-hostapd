@@ -1,0 +1,10 @@
+# hostapd configuration for DPP testing
+interface=<interface>
+driver=nl80211
+ssid=DPP-Test-AP
+hw_mode=g
+channel=<channel> # default 6
+
+# Control interface for DPP CLI communication
+ctrl_interface=<hostapd-run-path> # default /var/run/hostapd
+ctrl_interface_group=sudo
