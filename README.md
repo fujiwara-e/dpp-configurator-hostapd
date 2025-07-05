@@ -17,16 +17,22 @@ A collection of programs created to implement a configurator for Wi-Fi Easy Conn
 - DPP-compatible hostapd source code (https://w1.fi/cvs.html)
 
 ## Build
-```bash
-# Build hostapd integrated version
-make
 
-# Check dependencies
-make check-hostapd
+1. First time setup - configure Makefile:
+   ```bash
+   $ cp Makefile.sample Makefile
+   $ vim Makefile
+   # Set HOSTAPD_DIR to your hostapd source directory path
+   ```
 
-# Clean up
-make clean
-```
+2. Build the project:
+   ```bash
+   # Build
+   make
+
+   # Clean up
+   make clean
+   ```
 
 ## Hostapd configuration
 
