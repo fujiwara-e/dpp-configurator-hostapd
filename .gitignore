@@ -30,4 +30,5 @@ Thumbs.db
 *.log
 
 # Configuration files
+Makefile
 hostapd_dpp.conf
