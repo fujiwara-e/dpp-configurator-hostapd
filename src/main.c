@@ -5,7 +5,7 @@ static struct dpp_command commands[] = {
     {"configurator_add", cmd_configurator_add, "Add configurator"},
     {"dpp_qr_code", cmd_dpp_qr_code, "Parse QR code and add bootstrap"},
     {"bootstrap_get_uri", cmd_bootstrap_get_uri, "Get bootstrap URI"},
-    {"auth_init_real", cmd_auth_init_real, "Initiate DPP authentication (real wireless)"},
+    {"auth_init", cmd_auth_init_real, "Initiate DPP authentication"},
     {"status", cmd_status, "Show status"},
     {"help", cmd_help, "Show help"},
     {NULL, NULL, NULL}};

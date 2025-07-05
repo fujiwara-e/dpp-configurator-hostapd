@@ -20,7 +20,7 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("  %-25s %s\n", "configurator_add", "Add configurator (curve=prime256v1)");
     printf("  %-25s %s\n", "dpp_qr_code", "Parse QR code and add bootstrap");
     printf("  %-25s %s\n", "bootstrap_get_uri", "Get bootstrap URI by ID");
-    printf("  %-25s %s\n", "auth_init_real", "Initiate DPP authentication (REAL wireless)");
+    printf("  %-25s %s\n", "auth_init", "Initiate DPP authentication");
     printf("  %-25s %s\n", "status", "Show configurator status");
 
     printf("\nUtility Commands:\n");
@@ -33,7 +33,7 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("    bootstrap_get_uri id=1\n");
     printf("\n");
     printf("  Authentication:\n");
-    printf("    auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
+    printf("    auth_init peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
 
     printf("\nNotes:\n");
     printf("  - This tool integrates with hostapd for real DPP wireless communication\n");

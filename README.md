@@ -67,7 +67,7 @@ make clean
 
    - Real DPP authentication:
      ```bash
-     $ ./dpp-configurator-hostapd auth_init_real interface=wlo1 peer_uri="DPP:C:81/6;M:12:34:56:78:90:ab;K:MDkwEwYH...6DjUD8=;;" ssid=TestNetwork pass=test123
+     $ ./dpp-configurator-hostapd auth_init interface=wlo1 peer_uri="DPP:C:81/6;M:12:34:56:78:90:ab;K:MDkwEwYH...6DjUD8=;;" ssid=TestNetwork pass=test123
      ```
 
 5. Restore the Environment
@@ -77,11 +77,11 @@ make clean
 
 # Supported Commands
 
-| Command             | Status    | Description                            |
-| ------------------- | --------- | -------------------------------------- |
-| `help`              | ✅ Working | Display help information               |
-| `status`            | ✅ Working | Show current status                    |
-| `configurator_add`  | ✅ Working | Add DPP Configurator                   |
-| `dpp_qr_code`       | ✅ Working | Parse QR code                          |
-| `bootstrap_get_uri` | ✅ Working | Get bootstrap information              |
-| `auth_init_real`    | ✅ Working | Start real wireless DPP authentication |
+| Command             | Status    | Description               |
+| ------------------- | --------- | ------------------------- |
+| `help`              | ✅ Working | Display help information  |
+| `status`            | ✅ Working | Show current status       |
+| `configurator_add`  | ✅ Working | Add DPP Configurator      |
+| `dpp_qr_code`       | ✅ Working | Parse QR code             |
+| `bootstrap_get_uri` | ✅ Working | Get bootstrap information |
+| `auth_init`         | ✅ Working | Start DPP authentication  |
