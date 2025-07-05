@@ -23,13 +23,6 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("  %-25s %s\n", "auth_init_real", "Initiate DPP authentication (REAL wireless)");
     printf("  %-25s %s\n", "status", "Show configurator status");
 
-    printf("\nAuthentication Commands:\n");
-    printf("  %-25s %s\n", "auth_status", "Show authentication status");
-    printf("  %-25s %s\n", "auth_monitor", "Monitor DPP authentication events");
-
-    printf("\nGAS/Configuration Commands:\n");
-    printf("  %-25s %s\n", "config_request_monitor", "Monitor Configuration Request/Response");
-
     printf("\nUtility Commands:\n");
     printf("  %-25s %s\n", "help", "Show this help");
 
@@ -41,14 +34,9 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("\n");
     printf("  Authentication:\n");
     printf("    auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
-    printf("    auth_monitor interface=wlo1 timeout=60\n");
-    printf("\n");
-    printf("  GAS/Configuration:\n");
-    printf("    config_request_monitor interface=wlo1 timeout=120\n");
 
     printf("\nNotes:\n");
     printf("  - This tool integrates with hostapd for real DPP wireless communication\n");
-    printf("  - Use 'config_request_monitor' to monitor Configuration Request/Response\n");
     printf("  - SSID and password are automatically hex-encoded for hostapd\n");
     printf("  - Monitor DPP authentication progress with hostapd logs\n");
 
