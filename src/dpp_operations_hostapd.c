@@ -41,7 +41,6 @@ struct dpp_configurator_ctx *dpp_configurator_init(void)
     ctx->hapd = NULL;         // hostapd interface (後で設定)
     ctx->wireless_interface = NULL;
     ctx->operating_freq = 2412;          // デフォルト: Channel 6
-    ctx->listening_events = false;       // イベントリスニング状態を初期化
     ctx->config_request_monitor = false; // Configuration Request監視状態を初期化
 
     printf("DPP Configurator initialized (hostapd mode)\n");

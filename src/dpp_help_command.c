@@ -8,7 +8,6 @@
 #include <string.h>
 #include "../include/dpp_configurator.h"
 
-// help コマンド（hostapd統合版）
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
 {
     (void)ctx;  // 未使用パラメータの警告を避ける
@@ -27,7 +26,6 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("\nAuthentication Commands:\n");
     printf("  %-25s %s\n", "auth_status", "Show authentication status");
     printf("  %-25s %s\n", "auth_monitor", "Monitor DPP authentication events");
-    printf("  %-25s %s\n", "auth_control", "Control DPP authentication (start/stop/status)");
 
     printf("\nGAS/Configuration Commands:\n");
     printf("  %-25s %s\n", "config_request_monitor", "Monitor Configuration Request/Response");
@@ -38,17 +36,12 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("\nUsage Examples:\n");
     printf("  Basic Setup:\n");
     printf("    configurator_add curve=prime256v1\n");
-    printf("    dpp_qr_code \"DPP:K:MDkwEwYHKoZIzj0CAQYIKoZIzj0DAQc...\"\n");
+    printf("    dpp_qr_code \"DPP:C:81/6;M:12:34:56:78:90:ab;K:MDkwEwYH...6DjUD8=;;\"\n");
     printf("    bootstrap_get_uri id=1\n");
     printf("\n");
     printf("  Authentication:\n");
     printf("    auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
     printf("    auth_monitor interface=wlo1 timeout=60\n");
-    printf("\n");
-    printf("  Control:\n");
-    printf("    auth_control interface=wlo1 action=start\n");
-    printf("    auth_control interface=wlo1 action=stop\n");
-    printf("    auth_control interface=wlo1 action=status\n");
     printf("\n");
     printf("  GAS/Configuration:\n");
     printf("    config_request_monitor interface=wlo1 timeout=120\n");
@@ -56,7 +49,6 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("\nNotes:\n");
     printf("  - This tool integrates with hostapd for real DPP wireless communication\n");
     printf("  - Use 'config_request_monitor' to monitor Configuration Request/Response\n");
-    printf("  - Use 'auth_control' to start/stop DPP listening mode\n");
     printf("  - SSID and password are automatically hex-encoded for hostapd\n");
     printf("  - Monitor DPP authentication progress with hostapd logs\n");
 

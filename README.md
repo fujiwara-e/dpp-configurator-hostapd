@@ -77,15 +77,14 @@ make clean
 
 # Supported Commands
 
-| Command                  | Status    | Description                             |
-| ------------------------ | --------- | --------------------------------------- |
-| `help`                   | ✅ Working | Display help information                |
-| `status`                 | ✅ Working | Show current status                     |
-| `configurator_add`       | ✅ Working | Add DPP Configurator                    |
-| `dpp_qr_code`            | ✅ Working | Parse QR code                           |
-| `bootstrap_get_uri`      | ✅ Working | Get bootstrap information               |
-| `auth_init_real`         | ✅ Working | Start real wireless DPP authentication  |
-| `auth_status`            | ✅ Working | Show authentication status              |
-| `auth_monitor`           | ✅ Working | Monitor DPP authentication events       |
-| `auth_control`           | ✅ Working | Control DPP authentication (start/stop) |
-| `config_request_monitor` | ✅ Working | Monitor Configuration Request           |
+| Command                  | Status    | Description                            |
+| ------------------------ | --------- | -------------------------------------- |
+| `help`                   | ✅ Working | Display help information               |
+| `status`                 | ✅ Working | Show current status                    |
+| `configurator_add`       | ✅ Working | Add DPP Configurator                   |
+| `dpp_qr_code`            | ✅ Working | Parse QR code                          |
+| `bootstrap_get_uri`      | ✅ Working | Get bootstrap information              |
+| `auth_init_real`         | ✅ Working | Start real wireless DPP authentication |
+| `auth_status`            | ✅ Working | Show authentication status             |
+| `auth_monitor`           | ✅ Working | Monitor DPP authentication events      |
+| `config_request_monitor` | ✅ Working | Monitor Configuration Request          |

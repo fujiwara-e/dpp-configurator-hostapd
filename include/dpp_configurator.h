@@ -63,7 +63,6 @@ struct dpp_configurator_ctx
     void *hapd;                              // hostapd interface context
     char *wireless_interface;                // 無線インターフェース名
     unsigned int operating_freq;             // 動作周波数
-    bool listening_events;                   // イベントリスニング状態
     bool config_request_monitor;             // Configuration Request監視状態
 };
 
@@ -87,7 +86,6 @@ int cmd_bootstrap_get_uri(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_auth_monitor(struct dpp_configurator_ctx *ctx, char *args);
-int cmd_auth_control(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_status(struct dpp_configurator_ctx *ctx, char *args);
 int cmd_help(struct dpp_configurator_ctx *ctx, char *args);
 

@@ -8,7 +8,6 @@ static struct dpp_command commands[] = {
     {"auth_init_real", cmd_auth_init_real, "Initiate DPP authentication (real wireless)"},
     {"auth_status", cmd_auth_status, "Show authentication status"},
     {"auth_monitor", cmd_auth_monitor, "Monitor DPP authentication events"},
-    {"auth_control", cmd_auth_control, "Control DPP authentication (start/stop/status)"},
     {"config_request_monitor", cmd_config_request_monitor, "Monitor DPP Configuration Request/Response"},
     {"status", cmd_status, "Show status"},
     {"help", cmd_help, "Show help"},
