@@ -5,7 +5,7 @@ A collection of programs created to implement a configurator for Wi-Fi Easy Conn
 # Installation
 1. Clone code
    ```bash
-   $ git clone https://github.com/your-username/dpp-configurator.git
+   $ git clone https://github.com/fujiwara-e/dpp-configurator-hostapd.git
    ```
 
 # How to use
@@ -84,3 +84,7 @@ make clean
 | `dpp_qr_code`       | Parse QR code             |
 | `bootstrap_get_uri` | Get bootstrap information |
 | `auth_init`         | Start DPP authentication  |
+
+# License
+
+This project integrates with hostapd/wpa_supplicant components. For licensing information regarding hostapd components, please refer to `thirdparth/LICENCE`.
