@@ -249,7 +249,6 @@ cleanup:
     return ret;
 }
 
-// auth_init の実装（シンプル版）
 // auth_status コマンド（hostapd統合版）
 int cmd_auth_status(struct dpp_configurator_ctx *ctx, char *args)
 {

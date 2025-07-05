@@ -40,7 +40,7 @@ struct dpp_configurator_ctx *dpp_configurator_init(void)
     ctx->current_auth = NULL; // 現在の認証セッションを初期化
     ctx->hapd = NULL;         // hostapd interface (後で設定)
     ctx->wireless_interface = NULL;
-    ctx->operating_freq = 2412;          // デフォルト: Channel 1
+    ctx->operating_freq = 2412;          // デフォルト: Channel 6
     ctx->listening_events = false;       // イベントリスニング状態を初期化
     ctx->config_request_monitor = false; // Configuration Request監視状態を初期化
 
