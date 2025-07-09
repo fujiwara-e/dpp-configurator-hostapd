@@ -34,11 +34,18 @@ int cmd_help(struct dpp_configurator_ctx *ctx, char *args)
     printf("\n");
     printf("  Authentication:\n");
     printf("    auth_init peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword\n");
+    printf("    auth_init peer=1 configurator=1 conf=sta-psk interface=wlo1 ssid=MyNetwork pass=mypassword matter_pin=12345678\n");
+
+    printf("\nMatter Support:\n");
+    printf("  - Add matter_pin=XXXXXXXX to include 8-digit Matter PIN code\n");
+    printf("  - Matter PIN is included in DPP configuration for device commissioning\n");
+    printf("  - PIN must be exactly 8 digits (0-9)\n");
 
     printf("\nNotes:\n");
     printf("  - This tool integrates with hostapd for real DPP wireless communication\n");
     printf("  - SSID and password are automatically hex-encoded for hostapd\n");
     printf("  - Monitor DPP authentication progress with hostapd logs\n");
+    printf("  - Matter PIN is passed through to enrollee for Matter device setup\n");
 
     printf("\nImportant:\n");
     printf("  - Make sure hostapd is running with DPP support enabled\n");

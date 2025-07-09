@@ -1,6 +1,6 @@
 #include "../include/dpp_configurator.h"
 
-// 引数解析ユーティリティ
+// 引数解析ユーティリティ（JSON対応版）
 char *parse_argument(char *args, const char *key)
 {
     if (!args || !key)
@@ -8,29 +8,68 @@ char *parse_argument(char *args, const char *key)
         return NULL;
     }
 
-    char *args_copy = strdup(args);
-    if (!args_copy)
-    {
-        return NULL;
-    }
-
-    char *result = NULL;
     char key_pattern[64];
     snprintf(key_pattern, sizeof(key_pattern), "%s=", key);
     size_t key_len = strlen(key_pattern);
 
-    char *token = strtok(args_copy, " ");
-    while (token)
+    char *pos = strstr(args, key_pattern);
+    if (!pos)
     {
-        if (strncmp(token, key_pattern, key_len) == 0)
-        {
-            result = strdup(token + key_len);
-            break;
-        }
-        token = strtok(NULL, " ");
+        return NULL;
     }
 
-    free(args_copy);
+    // キーの位置を見つけたので、値の開始位置を特定
+    char *value_start = pos + key_len;
+    
+    // 引用符で囲まれているかチェック
+    if (*value_start == '"' || *value_start == '\'')
+    {
+        char quote_char = *value_start;
+        value_start++; // 引用符をスキップ
+        
+        // 対応する閉じ引用符を探す
+        char *value_end = value_start;
+        while (*value_end && *value_end != quote_char)
+        {
+            // エスケープされた引用符をスキップ
+            if (*value_end == '\\' && *(value_end + 1))
+            {
+                value_end += 2;
+            }
+            else
+            {
+                value_end++;
+            }
+        }
+        
+        if (*value_end == quote_char)
+        {
+            size_t value_len = value_end - value_start;
+            char *result = malloc(value_len + 1);
+            if (result)
+            {
+                strncpy(result, value_start, value_len);
+                result[value_len] = '\0';
+            }
+            return result;
+        }
+    }
+    
+    // 引用符で囲まれていない場合は、従来の処理
+    char *value_end = value_start;
+    while (*value_end && *value_end != ' ')
+    {
+        value_end++;
+    }
+    
+    size_t value_len = value_end - value_start;
+    char *result = malloc(value_len + 1);
+    if (result)
+    {
+        strncpy(result, value_start, value_len);
+        result[value_len] = '\0';
+    }
+    
     return result;
 }
 
@@ -112,4 +151,30 @@ bool is_hex_string(const char *str)
         }
     }
     return strlen(str) % 2 == 0; // 偶数長である必要がある
+}
+
+// Matter PINが有効かどうかを判定する関数
+bool is_valid_matter_pin(const char *pin)
+{
+    if (!pin)
+    {
+        return false;
+    }
+
+    // 長さチェック（正確に8桁）
+    if (strlen(pin) != 8)
+    {
+        return false;
+    }
+
+    // 数字のみチェック
+    for (size_t i = 0; i < 8; i++)
+    {
+        if (pin[i] < '0' || pin[i] > '9')
+        {
+            return false;
+        }
+    }
+
+    return true;
 }

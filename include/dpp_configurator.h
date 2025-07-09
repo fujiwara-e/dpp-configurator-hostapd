@@ -97,5 +97,6 @@ char *parse_argument(char *args, const char *key);
 void print_usage(const char *prog_name);
 char *decode_hex_string(const char *hex_str);
 bool is_hex_string(const char *str);
+bool is_valid_matter_pin(const char *pin);
 
 #endif /* DPP_CONFIGURATOR_H */

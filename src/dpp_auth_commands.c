@@ -21,7 +21,8 @@ extern char *encode_hex_string(const char *str);
 static int dpp_execute_real_auth(struct dpp_configurator_ctx *ctx,
                                  const char *interface,
                                  int peer_id, int configurator_id,
-                                 const char *conf_type, const char *ssid, const char *pass)
+                                 const char *conf_type, const char *ssid, const char *pass,
+                                 const char *matter_pin, const char *conf_json)
 {
     char cmd[512];
     char response[MAX_RESPONSE_SIZE];
@@ -70,7 +71,15 @@ static int dpp_execute_real_auth(struct dpp_configurator_ctx *ctx,
 
     // Step 3: DPP auth_init コマンドを構築（hostapdのIDを使用）
     printf("Step 3: Initiating DPP authentication...\n");
-    if (ssid && pass)
+    
+    // JSON設定が提供されている場合は、それを使用
+    if (conf_json) {
+        printf("Using JSON configuration: %s\n", conf_json);
+        snprintf(cmd, sizeof(cmd),
+                 "DPP_AUTH_INIT peer=%d configurator=%d conf_json='%s'",
+                 hostapd_peer_id, hostapd_configurator_id, conf_json);
+    }
+    else if (ssid && pass)
     {
         // SSIDとパスワードを16進数エンコード
         char *ssid_hex = NULL;
@@ -102,9 +111,19 @@ static int dpp_execute_real_auth(struct dpp_configurator_ctx *ctx,
 
         if (ssid_hex && pass_hex)
         {
-            snprintf(cmd, sizeof(cmd),
-                     "DPP_AUTH_INIT peer=%d configurator=%d conf=%s ssid=%s pass=%s",
-                     hostapd_peer_id, hostapd_configurator_id, conf_type, ssid_hex, pass_hex);
+            if (matter_pin && strlen(matter_pin) == 8)
+            {
+                snprintf(cmd, sizeof(cmd),
+                         "DPP_AUTH_INIT peer=%d configurator=%d conf=%s ssid=%s pass=%s matter_pin=%s",
+                         hostapd_peer_id, hostapd_configurator_id, conf_type, ssid_hex, pass_hex, matter_pin);
+                printf("Including Matter PIN: %s\n", matter_pin);
+            }
+            else
+            {
+                snprintf(cmd, sizeof(cmd),
+                         "DPP_AUTH_INIT peer=%d configurator=%d conf=%s ssid=%s pass=%s",
+                         hostapd_peer_id, hostapd_configurator_id, conf_type, ssid_hex, pass_hex);
+            }
         }
         else
         {
@@ -121,9 +140,19 @@ static int dpp_execute_real_auth(struct dpp_configurator_ctx *ctx,
     }
     else
     {
-        snprintf(cmd, sizeof(cmd),
-                 "DPP_AUTH_INIT peer=%d configurator=%d conf=%s",
-                 hostapd_peer_id, hostapd_configurator_id, conf_type);
+        if (matter_pin && strlen(matter_pin) == 8)
+        {
+            snprintf(cmd, sizeof(cmd),
+                     "DPP_AUTH_INIT peer=%d configurator=%d conf=%s matter_pin=%s",
+                     hostapd_peer_id, hostapd_configurator_id, conf_type, matter_pin);
+            printf("Including Matter PIN: %s\n", matter_pin);
+        }
+        else
+        {
+            snprintf(cmd, sizeof(cmd),
+                     "DPP_AUTH_INIT peer=%d configurator=%d conf=%s",
+                     hostapd_peer_id, hostapd_configurator_id, conf_type);
+        }
     }
 
     printf("Sending to hostapd: %s\n", cmd);
@@ -169,6 +198,8 @@ int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args)
     char *ssid = NULL;
     char *pass = NULL;
     char *interface = NULL;
+    char *matter_pin = NULL;
+    char *conf_json = NULL;
     int ret = -1;
 
     if (ctx->verbose)
@@ -183,6 +214,8 @@ int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args)
     ssid = parse_argument(args, "ssid");
     pass = parse_argument(args, "pass");
     interface = parse_argument(args, "interface");
+    matter_pin = parse_argument(args, "matter_pin");
+    conf_json = parse_argument(args, "conf_json");
 
     if (peer_str)
     {
@@ -197,27 +230,66 @@ int cmd_auth_init_real(struct dpp_configurator_ctx *ctx, char *args)
     }
 
     // 必須パラメータチェック
-    if (peer_id < 0 || configurator_id < 0 || !conf_type || !interface)
+    if (peer_id < 0 || configurator_id < 0 || !interface)
     {
-        printf("Error: peer, configurator, conf, and interface parameters required\n");
-        printf("Usage: auth_init_real peer=<id> configurator=<id> conf=<type> interface=<ifname> [ssid=<ssid>] [pass=<pass>]\n");
-        printf("Example: auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlan0 ssid=MyWiFi pass=secret123\n");
+        printf("Error: peer, configurator, and interface parameters required\n");
+        printf("Usage: auth_init_real peer=<id> configurator=<id> interface=<ifname> [conf=<type>] [ssid=<ssid>] [pass=<pass>] [matter_pin=<8-digit-pin>] [conf_json=\"<json>\"]\n");
+        printf("Example (traditional): auth_init_real peer=1 configurator=1 conf=sta-psk interface=wlan0 ssid=MyWiFi pass=secret123 matter_pin=12345678\n");
+        printf("Example (JSON): auth_init_real peer=1 configurator=1 interface=wlan0 conf_json='{\"wi-fi_tech\":\"infra\",\"discovery\":{\"ssid\":\"MyWiFi\"},\"cred\":{\"akm\":\"psk\",\"pass\":\"secret123\"},\"matter\":{\"pinCode\":\"12345678\"}}'\n");
+        printf("Note: Use single quotes around JSON to avoid shell interpretation issues\n");
         goto cleanup;
+    }
+
+    // JSON設定と従来の設定の混在チェック
+    if (conf_json && (conf_type || ssid || pass || matter_pin))
+    {
+        printf("Error: Cannot mix conf_json with traditional parameters (conf, ssid, pass, matter_pin)\n");
+        printf("Use either conf_json OR traditional parameters, not both\n");
+        goto cleanup;
+    }
+
+    // 従来の設定の場合のみconf_typeが必須
+    if (!conf_json && !conf_type)
+    {
+        printf("Error: conf parameter required when not using conf_json\n");
+        goto cleanup;
+    }
+
+    // Matter PINの検証（従来の設定の場合のみ）
+    if (matter_pin && !conf_json)
+    {
+        if (!is_valid_matter_pin(matter_pin))
+        {
+            printf("Error: Matter PIN must be exactly 8 digits (0-9 only)\n");
+            printf("Example: matter_pin=12345678\n");
+            goto cleanup;
+        }
+        printf("Matter PIN validation: OK\n");
     }
 
     printf("Real DPP Authentication Parameters:\n");
     printf("  Interface: %s\n", interface);
     printf("  Peer ID: %d\n", peer_id);
     printf("  Configurator ID: %d\n", configurator_id);
-    printf("  Configuration type: %s\n", conf_type);
-    if (ssid)
-        printf("  SSID: %s\n", ssid);
-    if (pass)
-        printf("  Password: %s\n", pass);
+    
+    if (conf_json)
+    {
+        printf("  JSON Configuration: %s\n", conf_json);
+    }
+    else
+    {
+        printf("  Configuration type: %s\n", conf_type);
+        if (ssid)
+            printf("  SSID: %s\n", ssid);
+        if (pass)
+            printf("  Password: %s\n", pass);
+        if (matter_pin)
+            printf("  Matter PIN: %s\n", matter_pin);
+    }
 
     // 実際のhostapd経由でDPP認証を実行
     ret = dpp_execute_real_auth(ctx, interface, peer_id, configurator_id,
-                                conf_type, ssid, pass);
+                                conf_type, ssid, pass, matter_pin, conf_json);
 
     if (ret == 0)
     {
@@ -245,6 +317,10 @@ cleanup:
         free(pass);
     if (interface)
         free(interface);
+    if (matter_pin)
+        free(matter_pin);
+    if (conf_json)
+        free(conf_json);
 
     return ret;
 }
